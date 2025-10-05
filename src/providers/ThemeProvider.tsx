@@ -1,15 +1,21 @@
 "use client";
-import { ThemeProvider } from "next-themes";
-import { ReactNode, useEffect, useState } from "react";
 
-export default function Providers({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return <>{children}</>;   // avoid hydration mismatch
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ReactNode } from "react";
 
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+export default function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       {children}
-    </ThemeProvider>
+    </NextThemesProvider>
   );
 }
