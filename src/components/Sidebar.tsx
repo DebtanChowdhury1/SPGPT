@@ -12,6 +12,13 @@ import {
 import { useTheme } from "next-themes";
 import { UserButton } from "@clerk/nextjs";
 
+// ✅ Define a type for threads (adjust fields if needed)
+interface Thread {
+  _id: string;
+  title: string;
+  createdAt?: string;
+}
+
 export default function Sidebar({
   onSelectThread,
   currentThread,
@@ -21,11 +28,11 @@ export default function Sidebar({
 }) {
   const { theme, setTheme } = useTheme();
 
-  const [threads, setThreads] = useState<any[]>([]);
+  // ✅ Replace any[] with Thread[]
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
-  // ✅ Always load threads on mount
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -39,7 +46,6 @@ export default function Sidebar({
     loadThreads();
   }, []);
 
-  // ✅ Create new thread
   const createThread = async () => {
     try {
       const res = await fetch("/api/threads/new", { method: "POST" });
@@ -51,7 +57,6 @@ export default function Sidebar({
     }
   };
 
-  // ✅ Delete a thread
   const deleteThread = async (id: string) => {
     if (!confirm("Delete this chat permanently?")) return;
     try {
@@ -63,7 +68,6 @@ export default function Sidebar({
     }
   };
 
-  // ✅ Rename a thread
   const startRename = (id: string, title: string) => {
     setEditingId(id);
     setNewTitle(title);
@@ -84,7 +88,6 @@ export default function Sidebar({
     }
   };
 
-  // ✅ Utility to reload thread list
   const reloadThreads = async () => {
     try {
       const res = await fetch("/api/threads");
@@ -95,16 +98,13 @@ export default function Sidebar({
     }
   };
 
-  // ✅ UI
   return (
     <aside className="w-64 h-screen border-r border-gray-800 flex flex-col bg-gray-950 text-white">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-800">
         <h2 className="font-bold text-lg">SPGPT</h2>
         <UserButton />
       </div>
 
-      {/* Threads List */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {threads.length === 0 && (
           <p className="text-gray-400 text-sm text-center mt-4">
@@ -157,7 +157,6 @@ export default function Sidebar({
         ))}
       </div>
 
-      {/* Footer */}
       <div className="p-3 flex items-center justify-between border-t border-gray-800">
         <button
           onClick={createThread}
