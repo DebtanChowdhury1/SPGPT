@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 
 export default function Home() {
@@ -11,18 +12,18 @@ export default function Home() {
       <h1 className="text-4xl font-bold">Welcome to SPGPT 🤖</h1>
       {user ? (
         <>
-          <a
+          <Link
             href="/chat"
-            className="bg-blue-600 px-5 py-2 rounded-lg text-white hover:bg-blue-700"
+            className="rounded-lg bg-blue-600 px-5 py-2 text-white transition-colors hover:bg-blue-700"
           >
             Start Chatting
-          </a>
+          </Link>
           <UserButton afterSignOutUrl="/sign-in" />
         </>
       ) : (
-        <a href="/sign-in" className="text-blue-400 underline">
+        <Link href="/sign-in" className="text-blue-600 underline dark:text-blue-400">
           Sign in to continue
-        </a>
+        </Link>
       )}
     </main>
   );

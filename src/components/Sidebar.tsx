@@ -1,16 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-  Plus,
-  Sun,
-  Moon,
-  MessageSquare,
-  Trash2,
-  Edit2,
-  Check,
-} from "lucide-react";
-import { useTheme } from "next-themes";
+import { Plus, MessageSquare, Trash2, Edit2, Check } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
+import ThemeToggle from "@/components/ThemeToggle";
+
+type Thread = {
+  _id: string;
+  title: string;
+};
 
 export default function Sidebar({
   onSelectThread,
@@ -19,9 +16,7 @@ export default function Sidebar({
   onSelectThread: (id: string | null) => void;
   currentThread: string | null;
 }) {
-  const { theme, setTheme } = useTheme();
-
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
@@ -31,7 +26,7 @@ export default function Sidebar({
       try {
         const res = await fetch("/api/threads");
         const data = await res.json();
-        setThreads(data.threads || []);
+        setThreads((data.threads as Thread[]) || []);
       } catch (err) {
         console.error("Error loading threads:", err);
       }
@@ -89,7 +84,7 @@ export default function Sidebar({
     try {
       const res = await fetch("/api/threads");
       const data = await res.json();
-      setThreads(data.threads || []);
+      setThreads((data.threads as Thread[]) || []);
     } catch (err) {
       console.error("Error reloading threads:", err);
     }
@@ -97,17 +92,17 @@ export default function Sidebar({
 
   // ✅ UI
   return (
-    <aside className="w-64 h-screen border-r border-gray-800 flex flex-col bg-gray-950 text-white">
+    <aside className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white text-gray-900 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-100">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-800">
         <h2 className="font-bold text-lg">SPGPT</h2>
         <UserButton />
       </div>
 
       {/* Threads List */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 space-y-1 overflow-y-auto p-2">
         {threads.length === 0 && (
-          <p className="text-gray-400 text-sm text-center mt-4">
+          <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
             No chats yet — start one!
           </p>
         )}
@@ -115,15 +110,15 @@ export default function Sidebar({
         {threads.map((t) => (
           <div
             key={t._id}
-            className={`group flex items-center justify-between gap-2 p-2 rounded-lg cursor-pointer ${
+            className={`group flex cursor-pointer items-center justify-between gap-2 rounded-lg p-2 transition-colors ${
               currentThread === t._id
-                ? "bg-blue-600"
-                : "bg-gray-800 hover:bg-gray-700"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
             }`}
           >
             <div
               onClick={() => onSelectThread(t._id)}
-              className="flex items-center gap-2 flex-1"
+              className="flex flex-1 items-center gap-2"
             >
               <MessageSquare size={16} />
               {editingId === t._id ? (
@@ -139,7 +134,7 @@ export default function Sidebar({
               )}
             </div>
 
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
               {editingId === t._id ? (
                 <button onClick={() => saveRename(t._id)}>
                   <Check size={15} />
@@ -158,20 +153,15 @@ export default function Sidebar({
       </div>
 
       {/* Footer */}
-      <div className="p-3 flex items-center justify-between border-t border-gray-800">
+      <div className="flex items-center justify-between border-t border-gray-200 p-3 dark:border-gray-800">
         <button
           onClick={createThread}
-          className="flex items-center gap-2 text-sm bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
         >
           <Plus size={16} /> New Chat
         </button>
 
-        <button
-          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="p-2 rounded-lg hover:bg-gray-800"
-        >
-          {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
+        <ThemeToggle className="h-9 w-9 bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700" />
       </div>
     </aside>
   );
