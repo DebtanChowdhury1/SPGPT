@@ -49,6 +49,7 @@ export default function ChatPage() {
   const [threadTitle, setThreadTitle] = useState("Select a chat");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -157,10 +158,16 @@ export default function ChatPage() {
     const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setAttachedFile(null);
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
+      const endpoint = isTemporaryChat ? "/api/chat/temporary" : "/api/chat";
+      const payload = isTemporaryChat
+        ? { message: content, attachment: attachmentMeta }
+        : { message: content, threadId: activeThreadId, attachment: attachmentMeta };
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: content, threadId: activeThreadId }),
@@ -176,7 +183,12 @@ export default function ChatPage() {
       }
 
       if (data.reply) {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+        const assistantMessage: Message = { role: "assistant", content: data.reply };
+        if (isTemporaryChat) {
+          setTemporaryMessages((prev) => [...prev, assistantMessage]);
+        } else {
+          setMessages((prev) => [...prev, assistantMessage]);
+        }
       }
     } catch (err) {
       console.error("Error sending message:", err);

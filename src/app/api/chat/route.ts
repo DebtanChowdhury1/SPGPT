@@ -10,7 +10,10 @@ export async function POST(req: Request) {
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { message, threadId } = await req.json();
+    const { message, threadId, attachment } = await req.json();
+    if (!message && !attachment) {
+      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    }
     await connectToDatabase();
 
     // Check that thread exists
@@ -19,7 +22,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid thread" }, { status: 400 });
 
     // Save user message
-    await Chat.create({ userId, threadId, role: "user", content: message });
+    await Chat.create({
+      userId,
+      threadId,
+      role: "user",
+      content: message || "",
+      attachment,
+    });
 
     // 🔥 Auto-rename thread if it's still "New Chat"
     if (thread.title === "New Chat") {
@@ -32,11 +41,20 @@ export async function POST(req: Request) {
     const endpoint =
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
+    const prompt = [message, attachment
+      ? `\n\nAttachment provided: ${attachment.name} (${attachment.type || "unknown type"}, ${Math.round(
+          Number(attachment.size || 0) / 1024
+        )} KB)`
+      : ""
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     const response = await fetch(`${endpoint}?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: message }] }],
+        contents: [{ parts: [{ text: prompt }] }],
       }),
     });
 
