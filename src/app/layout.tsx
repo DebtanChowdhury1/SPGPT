@@ -7,7 +7,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-white">
+        <body className="bg-[#05060d] text-slate-100 transition-colors duration-300">
           <Providers>{children}</Providers>
         </body>
       </html>
