@@ -215,11 +215,8 @@ export default function Sidebar({
           <p>Switch between light and dark</p>
         </div>
         <button
-          onClick={() =>
-            setTheme((resolvedTheme ?? "system") === "dark" ? "light" : "dark")
-          }
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           className="rounded-xl border border-slate-200/70 bg-slate-900/5 p-2 transition hover:bg-slate-900/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-          aria-label="Toggle theme"
         >
           {mounted && (resolvedTheme ?? "light") === "dark" ? (
             <Sun size={18} />
