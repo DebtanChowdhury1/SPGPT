@@ -1,6 +1,53 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export default function ChatPage() {
+import { useState, useEffect, useRef, type KeyboardEvent } from "react";
+import Sidebar, { type SidebarThread } from "@/components/Sidebar";
+import {
+  Bot,
+  Loader2,
+  Menu,
+  Send,
+  Sparkles,
+  User,
+  Wand2,
+  X,
+} from "lucide-react";
+
+export type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+const quickPrompts = [
+  {
+    title: "Brainstorm campaign ideas",
+    description: "Generate creative angles for my upcoming product launch.",
+    prompt:
+      "Help me brainstorm five creative campaign ideas for launching our new AI productivity app.",
+  },
+  {
+    title: "Explain a complex topic",
+    description: "Break down technical subjects into friendly language.",
+    prompt:
+      "Explain large language models to a beginner with a relatable real-world example.",
+  },
+  {
+    title: "Summarize this text",
+    description: "Turn long content into key bullet points.",
+    prompt:
+      "Summarize the key takeaways from the latest AI trends report in bullet points.",
+  },
+  {
+    title: "Write helpful code",
+    description: "Get tailored snippets or debugging help.",
+    prompt: "Write a reusable React hook that debounces a value with TypeScript types.",
+  },
+];
+
+const isJsonResponse = (response: Response) =>
+  response.headers.get("content-type")?.includes("application/json") ?? false;
+
+export default function ChatWorkspace() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [threadTitle, setThreadTitle] = useState("Select a chat");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -171,11 +218,7 @@ export default function ChatPage() {
 
   return (
     <main className="flex h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#030304] dark:text-white">
-      <Sidebar
-        onSelectThread={handleSelectThread}
-        currentThreadId={threadId}
-        className="hidden lg:flex"
-      />
+      <Sidebar onSelectThread={handleSelectThread} currentThreadId={threadId} className="hidden lg:flex" />
 
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-slate-200/70 bg-white/80 px-4 py-4 backdrop-blur transition-colors duration-300 dark:border-white/5 dark:bg-black/40 lg:px-8">
@@ -269,7 +312,9 @@ export default function ChatPage() {
                     messages.map((message, index) => (
                       <article
                         key={`${message.role}-${index}-${message.content.slice(0, 8)}`}
-                        className={`px-4 transition-colors duration-300 ${message.role === "assistant" ? "bg-slate-100 dark:bg-white/[0.02]" : ""}`}
+                        className={`px-4 transition-colors duration-300 ${
+                          message.role === "assistant" ? "bg-slate-100 dark:bg-white/[0.02]" : ""
+                        }`}
                       >
                         <div className="mx-auto flex w-full max-w-3xl gap-4 px-2 py-8">
                           <div
@@ -281,7 +326,9 @@ export default function ChatPage() {
                           >
                             {message.role === "assistant" ? <Bot size={20} /> : <User size={20} />}
                           </div>
-                          <p className="flex-1 whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-white/90">{message.content}</p>
+                          <p className="flex-1 whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-white/90">
+                            {message.content}
+                          </p>
                         </div>
                       </article>
                     ))
@@ -335,17 +382,9 @@ export default function ChatPage() {
 
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/70"
-            onClick={() => setIsSidebarOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="absolute inset-0 bg-black/70" onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
           <div className="relative ml-auto h-full w-[280px]">
-            <Sidebar
-              onSelectThread={handleSelectThread}
-              currentThreadId={threadId}
-              className="h-full"
-            />
+            <Sidebar onSelectThread={handleSelectThread} currentThreadId={threadId} className="h-full" />
             <button
               type="button"
               onClick={() => setIsSidebarOpen(false)}

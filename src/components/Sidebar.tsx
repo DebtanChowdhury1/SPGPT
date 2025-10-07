@@ -31,7 +31,10 @@ export default function Sidebar({
   currentThreadId: string | null;
   className?: string;
 }) {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   // ✅ Replace any[] with Thread[]
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -215,7 +218,11 @@ export default function Sidebar({
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           className="rounded-xl border border-slate-200/70 bg-slate-900/5 p-2 transition hover:bg-slate-900/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
         >
-          {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+          {mounted && (resolvedTheme ?? "light") === "dark" ? (
+            <Sun size={18} />
+          ) : (
+            <Moon size={18} />
+          )}
         </button>
       </div>
     </aside>
