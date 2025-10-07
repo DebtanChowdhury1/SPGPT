@@ -49,7 +49,6 @@ export default function ChatPage() {
   const [threadTitle, setThreadTitle] = useState("Select a chat");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -158,16 +157,10 @@ export default function ChatPage() {
     const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    setAttachedFile(null);
     setLoading(true);
 
     try {
-      const endpoint = isTemporaryChat ? "/api/chat/temporary" : "/api/chat";
-      const payload = isTemporaryChat
-        ? { message: content, attachment: attachmentMeta }
-        : { message: content, threadId: activeThreadId, attachment: attachmentMeta };
-
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: content, threadId: activeThreadId }),
@@ -184,11 +177,7 @@ export default function ChatPage() {
 
       if (data.reply) {
         const assistantMessage: Message = { role: "assistant", content: data.reply };
-        if (isTemporaryChat) {
-          setTemporaryMessages((prev) => [...prev, assistantMessage]);
-        } else {
-          setMessages((prev) => [...prev, assistantMessage]);
-        }
+        setMessages((prev) => [...prev, assistantMessage]);
       }
     } catch (err) {
       console.error("Error sending message:", err);
@@ -225,7 +214,7 @@ export default function ChatPage() {
   };
 
   return (
-    <main className="flex h-screen bg-[#030304] text-white">
+    <main className="flex h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#030304] dark:text-white">
       <Sidebar
         onSelectThread={handleSelectThread}
         currentThreadId={threadId}
@@ -233,24 +222,24 @@ export default function ChatPage() {
       />
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-white/5 bg-black/40 px-4 py-4 backdrop-blur lg:px-8">
+        <header className="flex items-center justify-between border-b border-slate-200/70 bg-white/80 px-4 py-4 backdrop-blur transition-colors duration-300 dark:border-white/5 dark:bg-black/40 lg:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-200/70 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10 lg:hidden"
               aria-label="Open conversations"
             >
               <Menu size={18} />
             </button>
             <div>
-              <p className="text-xs uppercase tracking-wide text-white/40">Chat thread</p>
-              <h1 className="text-lg font-semibold text-white">{threadTitle}</h1>
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40">Chat thread</p>
+              <h1 className="text-lg font-semibold text-slate-900 dark:text-white">{threadTitle}</h1>
             </div>
           </div>
 
-          <div className="hidden items-center gap-2 text-sm font-medium text-white/70 lg:flex">
-            <Sparkles size={16} className="text-emerald-300" />
+          <div className="hidden items-center gap-2 text-sm font-medium text-slate-600 dark:text-white/70 lg:flex">
+            <Sparkles size={16} className="text-emerald-500 dark:text-emerald-300" />
             Powered by Gemini 2.0 Flash
           </div>
         </header>
@@ -261,11 +250,11 @@ export default function ChatPage() {
               {!threadId ? (
                 <section className="flex flex-1 items-center justify-center px-6 py-12 text-center">
                   <div>
-                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-300">
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                       <Sparkles size={28} />
                     </div>
                     <h2 className="text-3xl font-semibold tracking-tight">Welcome to SPGPT</h2>
-                    <p className="mt-2 text-base text-white/70">
+                    <p className="mt-2 text-base text-slate-600 dark:text-white/70">
                       Select an existing conversation or start a fresh chat to begin exploring.
                     </p>
                     <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -274,21 +263,21 @@ export default function ChatPage() {
                           key={item.title}
                           type="button"
                           onClick={() => handlePromptClick(item.prompt)}
-                          className="rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left transition hover:border-emerald-300/40 hover:bg-emerald-500/10"
+                          className="rounded-2xl border border-slate-200/70 bg-white px-5 py-4 text-left transition hover:border-emerald-300/40 hover:bg-emerald-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-emerald-500/10"
                         >
-                          <div className="flex items-center gap-2 text-emerald-300">
+                          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                             <Wand2 size={16} />
                             <span className="text-xs font-semibold uppercase tracking-wide">Quick start</span>
                           </div>
-                          <p className="mt-2 text-sm font-medium text-white">{item.title}</p>
-                          <p className="text-xs text-white/60">{item.description}</p>
+                          <p className="mt-2 text-sm font-medium text-slate-900 dark:text-white">{item.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-white/60">{item.description}</p>
                         </button>
                       ))}
                     </div>
                   </div>
                 </section>
               ) : historyLoading ? (
-                <div className="flex flex-1 items-center justify-center py-20 text-white/60">
+                <div className="flex flex-1 items-center justify-center py-20 text-slate-500 dark:text-white/60">
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Loading conversation...
                 </div>
@@ -296,13 +285,13 @@ export default function ChatPage() {
                 <>
                   {messages.length === 0 ? (
                     <section className="px-6 py-10">
-                      <div className="mx-auto max-w-2xl rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-xl">
-                        <div className="flex items-center gap-2 text-emerald-300">
+                      <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-white/[0.03]">
+                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                           <Wand2 size={18} />
                           <span className="text-sm font-semibold uppercase tracking-wide">Inspiration</span>
                         </div>
-                        <h3 className="mt-3 text-xl font-semibold text-white">What would you like to explore?</h3>
-                        <p className="mt-2 text-sm text-white/60">
+                        <h3 className="mt-3 text-xl font-semibold text-slate-900 dark:text-white">What would you like to explore?</h3>
+                        <p className="mt-2 text-sm text-slate-600 dark:text-white/60">
                           Try one of these starter prompts or ask anything you have in mind.
                         </p>
                         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -311,10 +300,10 @@ export default function ChatPage() {
                               key={item.title}
                               type="button"
                               onClick={() => handlePromptClick(item.prompt)}
-                              className="rounded-2xl border border-white/10 bg-[#0a0a0f] px-4 py-4 text-left transition hover:border-emerald-400/40 hover:bg-emerald-500/5"
+                              className="rounded-2xl border border-slate-200/70 bg-white px-4 py-4 text-left transition hover:border-emerald-400/40 hover:bg-emerald-50 dark:border-white/10 dark:bg-[#0a0a0f] dark:hover:bg-emerald-500/5"
                             >
-                              <p className="text-sm font-medium text-white">{item.title}</p>
-                              <p className="mt-1 text-xs text-white/60">{item.description}</p>
+                              <p className="text-sm font-medium text-slate-900 dark:text-white">{item.title}</p>
+                              <p className="mt-1 text-xs text-slate-600 dark:text-white/60">{item.description}</p>
                             </button>
                           ))}
                         </div>
@@ -324,19 +313,19 @@ export default function ChatPage() {
                     messages.map((message, index) => (
                       <article
                         key={`${message.role}-${index}-${message.content.slice(0, 8)}`}
-                        className={`px-4 ${message.role === "assistant" ? "bg-white/[0.02]" : ""}`}
+                        className={`px-4 transition-colors duration-300 ${message.role === "assistant" ? "bg-slate-100 dark:bg-white/[0.02]" : ""}`}
                       >
                         <div className="mx-auto flex w-full max-w-3xl gap-4 px-2 py-8">
                           <div
                             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                               message.role === "assistant"
-                                ? "bg-emerald-500/15 text-emerald-300"
-                                : "bg-white/10 text-white"
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
+                                : "bg-slate-900/5 text-slate-900 dark:bg-white/10 dark:text-white"
                             }`}
                           >
                             {message.role === "assistant" ? <Bot size={20} /> : <User size={20} />}
                           </div>
-                          <p className="flex-1 whitespace-pre-wrap leading-relaxed text-white/90">{message.content}</p>
+                          <p className="flex-1 whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-white/90">{message.content}</p>
                         </div>
                       </article>
                     ))
@@ -345,10 +334,10 @@ export default function ChatPage() {
                   {loading && (
                     <article className="px-4">
                       <div className="mx-auto flex w-full max-w-3xl gap-4 px-2 py-8">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">
                           <Bot size={20} className="animate-pulse" />
                         </div>
-                        <div className="flex-1 text-white/60">SPGPT is composing a response…</div>
+                        <div className="flex-1 text-slate-500 dark:text-white/60">SPGPT is composing a response…</div>
                       </div>
                     </article>
                   )}
@@ -358,28 +347,27 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 bg-[#060608]/90 px-4 py-4 backdrop-blur lg:px-8">
-          <div className="mx-auto w-full max-w-3xl rounded-3xl border border-white/10 bg-black/40 p-4 shadow-2xl backdrop-blur">
+        <div className="border-t border-slate-200/70 bg-white/80 px-4 py-4 backdrop-blur transition-colors duration-300 dark:border-white/10 dark:bg-[#060608]/90 lg:px-8">
+          <div className="mx-auto w-full max-w-3xl rounded-3xl border border-slate-200/70 bg-white p-4 shadow-2xl backdrop-blur transition-colors duration-300 dark:border-white/10 dark:bg-black/40">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={threadId ? "Ask SPGPT anything..." : "Select or create a chat to start messaging."}
-              disabled={!threadId}
               rows={1}
-              className="max-h-[200px] w-full resize-none bg-transparent text-sm leading-relaxed text-white placeholder:text-white/40 focus:outline-none"
+              className="max-h-[200px] w-full resize-none bg-transparent text-sm leading-relaxed text-slate-700 placeholder:text-slate-400 focus:outline-none dark:text-white dark:placeholder:text-white/40"
             />
 
             <div className="mt-3 flex items-center justify-between gap-3">
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-slate-500 dark:text-white/40">
                 SPGPT may display inaccuracies. Verify critical information.
               </p>
               <button
                 type="button"
                 onClick={sendMessage}
-                disabled={!threadId || loading || !input.trim()}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-black transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30"
+                disabled={loading || !input.trim()}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-black transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:disabled:bg-white/10 dark:disabled:text-white/30"
                 aria-label="Send message"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send size={18} />}
@@ -405,7 +393,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => setIsSidebarOpen(false)}
-              className="absolute right-3 top-3 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+              className="absolute right-3 top-3 rounded-full bg-slate-200 p-2 text-slate-700 transition hover:bg-slate-300 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
               aria-label="Close conversations"
             >
               <X size={16} />
